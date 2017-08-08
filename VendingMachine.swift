@@ -54,9 +54,10 @@ class PlistConverter {
             throw InventoryError.invalidResource
         }
         
-        guard let dictionary = NSDictionary(contentsOfFile: path) else {
+        guard let dictionary = NSDictionary(contentsOfFile: path) as? [String: AnyObject] else {
             throw InventoryError.conversionFailure
         }
+        return dictionary
     }
 }
 
