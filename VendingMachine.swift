@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum VendingSelection {
+enum VendingSelection: String {
     case soda
     case dietSoda
     case chips
@@ -46,6 +46,7 @@ struct Item: VendingItem {
 enum InventoryError: Error {
     case invalidResource
     case conversionFailure
+    case invalidSelection
 }
 
 class PlistConverter {
@@ -60,6 +61,29 @@ class PlistConverter {
         return dictionary
     }
 }
+
+class InventoryUnarchiver {
+    static func vendingInventory(fromDictionary dictionary: [String: Any]) throws -> [VendingSelection: VendingItem] {
+        
+        var inventory: [VendingSelection: VendingItem] = [:]
+        
+        for (key, value) in dictionary {
+            if let itemDictionary = value as? [String: Any], let price = itemDictionary["price"] as? Double, let quantity = itemDictionary["quantity"] as? Int  {
+                let item = Item(price: price, quantity: quantity)
+            
+                guard let selection = VendingSelection(rawValue: key) else {
+                    throw InventoryError.invalidSelection
+                }
+                
+                inventory.updateValue(item, forKey: selection)
+            }
+        }
+        
+        return inventory
+        
+    }
+}
+
 
 class FoodVendingMachine: VendingMachine {
     let selection: [VendingSelection] = [.soda, .dietSoda, .chips, .cookie, .wrap, .sandwich, .candybar, .popTart, .water, .fruitJuice, .sportsDrink, .gum]
